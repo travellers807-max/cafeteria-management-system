@@ -1,0 +1,360 @@
+#include <iostream>
+#include <string>
+#include <iomanip>
+using namespace std;
+
+const int MAX_ITEMS     = 24;
+const int MAX_ORDERS    = 10;
+const int POINTS_RATE   = 10;
+const int POINTS_VALUE  = 2;
+
+string categories[4] = {
+    "APPETIZERS / STARTERS",
+    "BURGERS",
+    "PIZZAS",
+    "DRINKS & BEVERAGES"
+};
+
+string dishes[MAX_ITEMS] = {
+    "Loaded Animal Fries",
+    "Cheesy Garlic Breadsticks",
+    "Buffalo Hot Wings (6 pcs)",
+    "Mozzarella Triangles",
+    "Onion Rings w/ Truffle Dip",
+    "Chicken Tenders (5 pcs)",
+
+    "The Monster Beef Burger",
+    "Crispy Zinger Supreme",
+    "Mushroom Swiss Gourmet",
+    "Smokehouse BBQ Burger",
+    "Grilled Halloumi Burger",
+    "Peri Peri Chicken Burger",
+    "Classic Wagyu Burger",
+    "Double Cheese Smash Burger",
+
+    "Large Pepperoni Passion",
+    "Large BBQ Chicken Feast",
+    "Large Margherita Special",
+    "Large Veggie Supreme",
+    "Large Creamy Tikka Pizza",
+
+    "Fresh Lime Mint Margarita",
+    "Chocolate Fudge Shake",
+    "Cold Coffee w/ Ice Cream",
+    "Blueberry Slush",
+    "Nutella Freakshake"
+};
+
+int prices[MAX_ITEMS] = {
+    450, 380, 650, 480, 350, 550,
+    1200, 850, 950, 1100, 850, 880, 1500, 750,
+    1650, 1750, 1400, 1550, 1850,
+    350, 550, 480, 400, 700
+};
+
+int catStart[4] = {0, 6, 14, 19};
+int catEnd[4]   = {5, 13, 18, 23};
+
+int totalCustomersServed = 0;
+int totalRevenue         = 0;
+int totalLoyaltyPoints   = 0;
+
+void printLine(char symbol, int length) {
+    for (int i = 0; i < length; i++) cout << symbol;
+    cout << endl;
+}
+
+void displayBanner() {
+    printLine('=', 62);
+    cout << "||" << setw(30) << "" << setw(28) << "||" << endl;
+    cout << "||" << setw(34) << "BurgerByte Fast Food" << setw(24) << "||" << endl;
+    cout << "||" << setw(36) << "Rawalpindi Campus Branch" << setw(22) << "||" << endl;
+    printLine('=', 62);
+    cout << "  Loyalty Points | Student Discounts | Combo Deals" << endl;
+    printLine('-', 62);
+}
+
+void displayMenu() {
+    cout << "\n";
+    printLine('=', 62);
+    cout << setw(36) << "TODAY'S MENU" << endl;
+    printLine('=', 62);
+
+    int itemNumber = 1;
+
+    for (int cat = 0; cat < 4; cat++) {
+        cout << "\n  >> " << categories[cat] << " <<" << endl;
+        printLine('-', 62);
+
+        for (int i = catStart[cat]; i <= catEnd[cat]; i++) {
+            cout << "  " << setw(2) << itemNumber << ".  "
+                 << left << setw(28) << dishes[i]
+                 << right << "Rs. " << setw(4) << prices[i] << endl;
+            itemNumber++;
+        }
+    }
+
+    printLine('=', 62);
+    cout << "\n  COMBO DEALS (Special Pricing!):" << endl;
+    printLine('-', 62);
+    cout << "  C1. Wings + Fries + Shake          Rs. 420  (Save Rs. 40!)" << endl;
+    cout << "  C2. Burger + Fries + Cold Coffee   Rs. 580  (Save Rs. 60!)" << endl;
+    cout << "  C3. Any 3 Appetizers               Rs. 200  (Save Rs. 50!)" << endl;
+    printLine('=', 62);
+}
+
+bool verifyStudentID() {
+    string studentID;
+    cout << "\n  Enter your Student ID (or press 0 to skip): ";
+    cin >> studentID;
+
+    if (studentID == "0") {
+        return false;
+    } else if (studentID.length() >= 5) {
+        cout << "  [v] Student ID verified! You get 15% discount." << endl;
+        return true;
+    } else {
+        cout << "  [x] Invalid Student ID. No student discount applied." << endl;
+        return false;
+    }
+}
+
+int handleCombo(int comboChoice) {
+    int comboPrice = 0;
+
+    cout << "\n  --- COMBO ORDER ---" << endl;
+
+    if (comboChoice == 1) {
+        cout << "  Combo 1: Buffalo Wings + Loaded Fries + Chocolate Shake" << endl;
+        comboPrice = 420;
+    } else if (comboChoice == 2) {
+        cout << "  Combo 2: Monster Burger + Onion Rings + Cold Coffee" << endl;
+        comboPrice = 580;
+    } else if (comboChoice == 3) {
+        cout << "  Combo 3: Any 3 Appetizers of your choice" << endl;
+        comboPrice = 200;
+    }
+
+    cout << "  Combo Price: Rs. " << comboPrice << endl;
+    return comboPrice;
+}
+
+int takeOrder(int orderHistory[], int orderPrices[], int &orderCount) {
+    int choice;
+
+    cout << "\n  Enter item number (1-" << MAX_ITEMS << ") or combo (C1/C2/C3): ";
+
+    char firstChar;
+    cin >> firstChar;
+
+    if (firstChar == 'C' || firstChar == 'c') {
+        int comboNum;
+        cin >> comboNum;
+
+        if (comboNum >= 1 && comboNum <= 3) {
+            int comboPrice = handleCombo(comboNum);
+            orderHistory[orderCount] = -(comboNum);
+            orderPrices[orderCount]  = comboPrice;
+            orderCount++;
+            return comboPrice;
+        } else {
+            cout << "  Invalid combo choice!" << endl;
+            return 0;
+        }
+    } else {
+        cin.putback(firstChar);
+        cin >> choice;
+
+        if (choice >= 1 && choice <= MAX_ITEMS) {
+            int itemIndex = choice - 1;
+            cout << "\n  [v] Added: " << dishes[itemIndex]
+                 << "  --  Rs. " << prices[itemIndex] << endl;
+
+            orderHistory[orderCount] = choice;
+            orderPrices[orderCount]  = prices[itemIndex];
+            orderCount++;
+            return prices[itemIndex];
+        } else {
+            cout << "  [x] Invalid choice! Please enter 1 to "
+                 << MAX_ITEMS << endl;
+            return 0;
+        }
+    }
+}
+
+void printReceipt(int customerNum, int orderHistory[],
+                  int orderPrices[], int orderCount,
+                  int subtotal, bool isStudent,
+                  int pointsUsed, int pointsEarned) {
+
+    printLine('=', 62);
+    cout << setw(38) << "BURGERBYTE FAST FOOD" << endl;
+    cout << setw(40) << "Rawalpindi Campus Branch" << endl;
+    printLine('-', 62);
+    cout << "  Customer #" << customerNum << endl;
+    printLine('-', 62);
+    cout << left << setw(32) << "  ITEM"
+         << right << setw(8) << "PRICE" << endl;
+    printLine('-', 62);
+
+    for (int i = 0; i < orderCount; i++) {
+        if (orderHistory[i] < 0) {
+            int comboNum = -(orderHistory[i]);
+            cout << left << setw(32) << ("  Combo Deal #" + to_string(comboNum))
+                 << right << "Rs. " << setw(4) << orderPrices[i] << endl;
+        } else {
+            int idx = orderHistory[i] - 1;
+            cout << "  " << left << setw(30) << dishes[idx]
+                 << right << "Rs. " << setw(4) << orderPrices[i] << endl;
+        }
+    }
+
+    printLine('-', 62);
+    cout << left << setw(40) << "  Subtotal"
+         << right << "Rs. " << setw(4) << subtotal << endl;
+
+    int discount = 0;
+    if (isStudent) {
+        discount = subtotal * 0.15;
+        cout << left << setw(40) << "  Student Discount (15%)"
+             << right << "Rs. -" << setw(3) << discount << endl;
+    }
+
+    int pointsDiscount = pointsUsed * POINTS_VALUE;
+    if (pointsUsed > 0) {
+        cout << left << setw(40) << "  Loyalty Points Redeemed"
+             << right << "Rs. -" << setw(3) << pointsDiscount << endl;
+    }
+
+    int finalBill = subtotal - discount - pointsDiscount;
+
+    printLine('-', 62);
+    cout << left << setw(40) << "  TOTAL PAYABLE"
+         << right << "Rs. " << setw(4) << finalBill << endl;
+    printLine('-', 62);
+    cout << "  Loyalty Points Earned This Visit: "
+         << pointsEarned << " pts" << endl;
+    printLine('=', 62);
+    cout << "    Thank you! Visit Again :)" << endl;
+    printLine('=', 62);
+}
+
+int handleLoyaltyPoints(int &customerPoints, int subtotal) {
+    int pointsUsed = 0;
+
+    cout << "\n  Your Loyalty Points Balance: " << customerPoints << " pts";
+    cout << "  (Worth Rs. " << customerPoints * POINTS_VALUE << ")" << endl;
+
+    if (customerPoints > 0) {
+        char redeem;
+        cout << "  Would you like to redeem points? (y/n): ";
+        cin >> redeem;
+
+        if (redeem == 'y' || redeem == 'Y') {
+            cout << "  Enter points to redeem (max " << customerPoints << "): ";
+            cin >> pointsUsed;
+
+            if (pointsUsed > customerPoints) {
+                cout << "  Not enough points! Using all "
+                     << customerPoints << " points." << endl;
+                pointsUsed = customerPoints;
+            }
+            customerPoints -= pointsUsed;
+            cout << "  [v] Redeemed " << pointsUsed << " points = Rs. "
+                 << pointsUsed * POINTS_VALUE << " discount!" << endl;
+        }
+    }
+
+    return pointsUsed;
+}
+
+void printDaySummary() {
+    printLine('=', 62);
+    cout << setw(42) << "END OF DAY SUMMARY -- BURGERBYTE FAST FOOD" << endl;
+    printLine('=', 62);
+    cout << "  Total Customers Served  : " << totalCustomersServed << endl;
+    cout << "  Total Revenue Today     : Rs. " << totalRevenue << endl;
+    cout << "  Total Loyalty Pts Given : " << totalLoyaltyPoints << " pts" << endl;
+    printLine('-', 62);
+
+    if (totalRevenue >= 10000) {
+        cout << "  Performance  : *** OUTSTANDING DAY! ***" << endl;
+    } else if (totalRevenue >= 5000) {
+        cout << "  Performance  : ** Excellent Business! **" << endl;
+    } else if (totalRevenue >= 2000) {
+        cout << "  Performance  : * Good Day, Keep it up!" << endl;
+    } else {
+        cout << "  Performance  : Slow day. Tomorrow will be better!" << endl;
+    }
+
+    if (totalLoyaltyPoints >= 100) {
+        cout << "  Loyalty Prog : Very Active -- Customers love it!" << endl;
+    } else {
+        cout << "  Loyalty Prog : Promote it more to customers!" << endl;
+    }
+
+    printLine('=', 62);
+    cout << "        Cafeteria Closing. Goodbye!" << endl;
+    printLine('=', 62);
+}
+
+int main() {
+
+    displayBanner();
+
+    char another = 'y';
+    int customerLoyaltyPoints = 0;
+
+    while (another == 'y' || another == 'Y') {
+
+        totalCustomersServed++;
+        int customerNum = totalCustomersServed;
+
+        cout << "\n";
+        printLine('*', 62);
+        cout << "  CUSTOMER #" << customerNum << endl;
+        printLine('*', 62);
+
+        displayMenu();
+
+        bool isStudent = verifyStudentID();
+
+        int orderHistory[MAX_ORDERS] = {0};
+        int orderPrices[MAX_ORDERS]  = {0};
+        int orderCount  = 0;
+        int subtotal    = 0;
+
+        char addMore = 'y';
+        while ((addMore == 'y' || addMore == 'Y') && orderCount < MAX_ORDERS) {
+
+            int itemCost = takeOrder(orderHistory, orderPrices, orderCount);
+            subtotal += itemCost;
+
+            cout << "  Current Total: Rs. " << subtotal << endl;
+            cout << "  Add another item? (y/n): ";
+            cin >> addMore;
+        }
+
+        int pointsUsed = handleLoyaltyPoints(customerLoyaltyPoints, subtotal);
+
+        int pointsEarned = subtotal / POINTS_RATE;
+        customerLoyaltyPoints += pointsEarned;
+        totalLoyaltyPoints    += pointsEarned;
+
+        int discount       = isStudent ? (subtotal * 0.15) : 0;
+        int pointsDiscount = pointsUsed * POINTS_VALUE;
+        int finalBill      = subtotal - discount - pointsDiscount;
+
+        totalRevenue += finalBill;
+
+        printReceipt(customerNum, orderHistory, orderPrices, orderCount,
+                     subtotal, isStudent, pointsUsed, pointsEarned);
+
+        cout << "\n  Is there another customer? (y/n): ";
+        cin >> another;
+    }
+
+    printDaySummary();
+
+    return 0;
+}
